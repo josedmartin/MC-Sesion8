@@ -12,19 +12,25 @@ def f(a,b):
 
 # Puntos fijos:
 def puntosFijos(a, b):
-    eq = f(a,b) - x
-    res = lambdify(x, eq, modules=['numpy'])
-    # xtol para terminar el calculo si el error entre dos iteraciones consecutivas es menor al dado
-    value, info, ier, msg = fsolve(res, 0.5, xtol=1e-11, full_output=True)
-    # Si no encuentra solucion ier == 0
-    if ier != 1:
-        return [0.]
-    else:
-        return value
+    puntosF = list()
+    try:
+        puntos = sp.solve([f(a,b)-x], [x], dict=True)
+        for p in puntos:
+            if (p != 'zoo' or p != '-zoo'):
+                puntosF.append(p)
+    except Exception:
+        pass
+    return puntosF
 
 def estabilidad(f,ptos_fijos):
+    aux = set()
     for pf in ptos_fijos:
-        v = sp.diff(f, x).subs(x,pf) #Derivamos y sustituimos por el valor
+        p = pf[x]
+        aux.add(p)
+
+    for punto in aux:
+        print("ESTAMOS MIRANDO EL PUNTO: " + str(punto))
+        v = sp.diff(f, x).subs(x,punto) #Derivamos y sustituimos por el valor
         res  = abs(v)
         print("VALOR OBTENIDO DERIVADA: " + str(res))
         mensaje = ""
@@ -38,7 +44,7 @@ def estabilidad(f,ptos_fijos):
                     mensaje = "El punto " + str(pf) + " es super actractivo."
                 else:
                     mensaje = "El punto " + str(pf) + " es indiferente."
-        return mensaje
+        print (mensaje)
 
 if __name__ == '__main__':
     # print("Escriba un intervalo para calcular los puntos extremos (desde 0 hasta el valor elegido): ", end="")
@@ -59,18 +65,17 @@ if __name__ == '__main__':
     
     # print(puntosF)
 
-    print("A")
+    print("Introduce el valor de A: ")
     a = int(input())
-    print("B")
+    print("Introduce el valor de B: ")
     b = int(input())
 
     print("Funcion inicial: " + str(f(a,b)) + "\n")
 
-    pts = puntosFijos(a, b)
+    puntosF = puntosFijos(a, b)
 
-    print("Puntos fijos: " + str(pts) + "\n")
+    print("Puntos fijos: " + str(puntosF) + "\n")
 
-    res = estabilidad(f(a,b),pts[0])
+    estabilidad(f(a,b),puntosF)
 
-    print(res)
 
