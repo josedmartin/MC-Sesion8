@@ -1,10 +1,15 @@
 from sympy import *
 from math import e
+import numpy as np
+import matplotlib.pyplot as plt
 
 x, y = symbols('x y')
 
 def f(a,b,x):
     return ((a*x) - (3*a)/(a + pow(e,(b*x))))
+
+def fg(a,b):
+    return ( a*y + ((a*x) - (3*a)/(a + pow(e,(b*x)))), a*y + ((a*x) - (3*a)/(a + pow(e,(b*x)))) )
 
 #Calculo de cualquier punto periodico de periodo k 
 def recursividad_fx(a,b,k):
@@ -94,8 +99,6 @@ def lyapunov_n(f, g, x0, y0):
     A_t = A.transpose()
     return list(map(lambda x: sqrt(x), list((A*A_t).subs({x: x0, y: y0}).eigenvals().keys())))
 
-
-
 if __name__ == '__main__':
 
     print("Introduce el valor de A: ")
@@ -138,9 +141,18 @@ if __name__ == '__main__':
     y0 = int(input())
 
     #Calculamos los exponentes de Lyapunov
-    n_l = lyapunov_n(fx, gy, x0, y0)
-    print(f"Exponentes de Lyapunov {n_l}")
-    exp_lyapunov = list(map(lambda x: ln(x), n_l))
+    n_lyapunov = lyapunov_n(fx, gy, x0, y0)
+    print(f"Numero de Lyapunov {n_lyapunov}")
+    exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
     print(f"Exponentes de Lyapunov {exp_lyapunov}")
 
+    #Ver si hay órbitas caóticas para x0 e y0
+    if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
+        #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
+        #ambas orbitas tendrán el mismo exponente de Lyapunov.
+        if (exp_lyapunov[0] == exp_lyapunov[1]) : 
+            print("Hay orbitas caoticas")
+    else :
+        print("No se encuentran Orbitas Caoticas")
 
+        
