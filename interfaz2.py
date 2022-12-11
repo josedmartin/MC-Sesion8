@@ -1,16 +1,17 @@
-import tkinter
+from tkinter import *
 import tkinter.messagebox
 import customtkinter
 from math import e
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
-from sympy import Symbol
+from sympy import *
+import main
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-
+x, y = symbols('x y')
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -35,12 +36,13 @@ class App(customtkinter.CTk):
         # self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
 
         # create main entry and button
-        self.entry = customtkinter.CTkEntry(self, placeholder_text="Datos")
-        self.entry.grid(row=11, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
+        #self.entry = customtkinter.CTkEntry(self, placeholder_text="Datos")
+        self.resultados = tkinter.Text(self,height=5, width=40, background="white")
+        self.resultados.grid(row=11, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.entry1 = customtkinter.CTkEntry(self, placeholder_text="Valor para alpha: ", width=100, height=10)
+        self.entry1 = customtkinter.CTkEntry(self, placeholder_text="Valor para a: ", width=100, height=10)
         self.entry1.grid(row=5, column=1, padx=(20, 0), pady=(20, 10), sticky="nsew")
-        self.entry2 = customtkinter.CTkEntry(self, placeholder_text="Valor para beta: ", width=100, height=10)
+        self.entry2 = customtkinter.CTkEntry(self, placeholder_text="Valor para b: ", width=100, height=10)
         self.entry2.grid(row=5, column=2, padx=(20, 0), pady=(20, 10), sticky="nsew")
         self.entry3 = customtkinter.CTkEntry(self, placeholder_text="Valor para k: ", width=100, height=10)
         self.entry3.grid(row=7, column=1, padx=(20, 0), pady=(20, 10), sticky="nsew")
@@ -65,19 +67,14 @@ class App(customtkinter.CTk):
         
 
         # create main entry and button
-        self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="RoyalBlue2", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.plot_function)
+        self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="RoyalBlue2", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.Calcular)
         self.main_button_1.grid(row=10, column=3, padx=(20, 20), pady=(10, 10), sticky="nsew")
-        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"), 
-                                                     command=self.borrar)
+        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.main_button_2.grid(row=11, column=3, padx=(20, 20), pady=(10, 10), sticky="nsew")
 
         # create textbox
-        self.textbox = tkinter.Text(self, width=250, background="gray30")
+        self.textbox = tkinter.Text(self,height=200, width=250, background="gray30")
         self.textbox.grid(row=0, column=1, columnspan=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-
-
-
-
 
         # Para configurar la pantalla
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Apariencia:", anchor="w")
@@ -101,12 +98,58 @@ class App(customtkinter.CTk):
     def sidebar_button_event(self):
         print("sidebar_button click")
     
-    
-    x = Symbol('x')
+
     # Crea una función para dibujar la gráfica de la función
-    def plot_function(self):
+    def Calcular(self):
         a = float(self.entry1.get())
         b = float(self.entry2.get())
+        
+        fx = a*y + main.f(a,b,x) 
+        gy = -x + main.f(a,b,fx)
+        
+        k = float(self.entry3.get())
+
+        fk = main.recursividad_fx(a,b,k)
+        gk = main.recursividad_gy(a,b,k)
+
+        #Calculo de los puntos fijos
+        puntos_fijos = nonlinsolve([Eq(fk, x), Eq(gk, y)], (x, y))
+        self.resultados.insert('1.0', "Puntos fijos: " + str(puntos_fijos))
+
+        #Calculamos la estabilidad de los puntos fijos mediante la funcion estabilidad
+        res = main.estabilidad(fx, gy, puntos_fijos)
+        self.resultados.insert('2.0', "\nEstabilidad: " + str(res))
+        
+        #Calculamos la matriz jacobiana
+        j = [[simplify(i) for i in x] for x in Matrix([fx, gy]).jacobian(Matrix([x, y])).tolist()]
+        self.resultados.insert('3.0', "\nJacobiana: " + str(j))
+
+        #Para los puntos fijos obtenidos calculamos los autovalores
+        f_eigen_values = list(Matrix([fx, gy]).jacobian(Matrix([x, y])).eigenvals().keys())
+
+        eigen_values = [list(simplify(f.subs({x:p[0], y:p[1]})) for f in f_eigen_values) for p in puntos_fijos]
+
+        self.resultados.insert('4.0', "\nAutovalores: " + str(eigen_values))
+        
+        #Valores para calcular los exponentes de Lyapunov
+        x0 = float(self.entry4.get())
+        y0 = float(self.entry5.get())
+
+        #Calculamos los exponentes de Lyapunov
+        n_lyapunov = main.lyapunov_n(fx, gy, x0, y0)
+        self.resultados.insert('5.0', "\nNumero de Lyapunov: " + str(n_lyapunov))
+        exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
+        self.resultados.insert('6.0', "\nExponentes de Lyapunov: " + str(exp_lyapunov))
+
+        #Ver si hay órbitas caóticas para x0 e y0
+        if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
+            #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
+            #ambas orbitas tendrán el mismo exponente de Lyapunov.
+            if (exp_lyapunov[0] == exp_lyapunov[1]) : 
+                self.resultados.insert('7.0', "\nHay orbitas caoticas")
+        else :
+            self.resultados.insert('8.0', "\nNo se encuentran Orbitas Caoticas")
+
         # Define la función a graficar
         def f(x):
             return ((a*x) - (3*b)/(a + pow(e,(b*x))))
@@ -116,10 +159,10 @@ class App(customtkinter.CTk):
 
         # Calcula los valores de x y y para la gráfica
         x1 = np.linspace(-10, 10, 100)
-        y = f(x1)
+        f1 = f(x1)
 
         # Dibuja la gráfica de la función
-        ax.plot(x1, y)
+        ax.plot(x1, f1)
         
         # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
         canvas = FigureCanvasTkAgg(fig, master=self.textbox)
@@ -127,6 +170,7 @@ class App(customtkinter.CTk):
         widget = canvas.get_tk_widget()
         # Muestra el widget
         widget.pack()
+    
         
 
 if __name__ == "__main__":
