@@ -21,8 +21,8 @@ class App(customtkinter.CTk):
         self.geometry(f"{1100}x{580}")
 
         # configure grid layout (4x4)
-        self.grid_columnconfigure((1, 2, 3), weight=1)
-        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure((2, 3), weight=1)
+        self.grid_rowconfigure((5), weight=1)
         
         # Frame customizado para titulo y demas opciones
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
@@ -37,23 +37,26 @@ class App(customtkinter.CTk):
 
         # create main entry and button
         #self.entry = customtkinter.CTkEntry(self, placeholder_text="Datos")
+        # Para mostrar los resultados
+        self.puntos = customtkinter.CTkLabel(self, text="Puntos Fijos: ", anchor="w")
+        self.puntos.grid(row=9, column=1, padx=(20,10), pady=(10, 0))
         self.resultados = tkinter.Text(self,height=5, width=40, background="white")
-        self.resultados.grid(row=11, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
+        self.resultados.grid(row=10, column=1,rowspan=2, columnspan=6, padx=(20, 0), pady=(20, 50), sticky="nsew")
 
-        self.entry1 = customtkinter.CTkEntry(self, placeholder_text="Valor para a: ", width=100, height=10)
-        self.entry1.grid(row=5, column=1, padx=(20, 0), pady=(20, 10), sticky="nsew")
-        self.entry2 = customtkinter.CTkEntry(self, placeholder_text="Valor para b: ", width=100, height=10)
-        self.entry2.grid(row=5, column=2, padx=(20, 0), pady=(20, 10), sticky="nsew")
-        self.entry3 = customtkinter.CTkEntry(self, placeholder_text="Valor para k: ", width=100, height=10)
-        self.entry3.grid(row=7, column=1, padx=(20, 0), pady=(20, 10), sticky="nsew")
-        self.entry4 = customtkinter.CTkEntry(self, placeholder_text="Valor para x0: ", width=100, height=10)
-        self.entry4.grid(row=7, column=2, padx=(20, 0), pady=(20, 10), sticky="nsew")
-        self.entry5 = customtkinter.CTkEntry(self, placeholder_text="Valor para y0: ", width=100, height=10)
-        self.entry5.grid(row=9, column=1, padx=(20, 0), pady=(20, 10), sticky="nsew")
+        self.entry1 = customtkinter.CTkEntry(self, placeholder_text="a ", width=50, height=10)
+        self.entry1.grid(row=0, column=4, padx=(10, 20), pady=(50, 10), sticky="nsew")
+        self.entry2 = customtkinter.CTkEntry(self, placeholder_text="b ", width=50, height=10)
+        self.entry2.grid(row=1, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
+        self.entry3 = customtkinter.CTkEntry(self, placeholder_text="k ", width=100, height=10)
+        self.entry3.grid(row=2, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
+        self.entry4 = customtkinter.CTkEntry(self, placeholder_text="x0 ", width=100, height=10)
+        self.entry4.grid(row=3, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
+        self.entry5 = customtkinter.CTkEntry(self, placeholder_text="y0 ", width=100, height=10)
+        self.entry5.grid(row=4, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
         
         # create radiobutton frame
         self.radiobutton_frame = customtkinter.CTkFrame(self)
-        self.radiobutton_frame.grid(row=5, column=3, rowspan=5, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.radiobutton_frame.grid(row=0, column=7,rowspan=6, padx=(20, 50), pady=(50, 0), sticky="nsew")
         self.radio_var = tkinter.IntVar(value=0)
         self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="Tipo de gráfica:")
         self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
@@ -68,13 +71,13 @@ class App(customtkinter.CTk):
 
         # create main entry and button
         self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="RoyalBlue2", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.Calcular)
-        self.main_button_1.grid(row=10, column=3, padx=(20, 20), pady=(10, 10), sticky="nsew")
+        self.main_button_1.grid(row=10, column=7, padx=(20, 50), pady=(20, 10), sticky="nsew")
         self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.main_button_2.grid(row=11, column=3, padx=(20, 20), pady=(10, 10), sticky="nsew")
+        self.main_button_2.grid(row=11, column=7, padx=(20, 50), pady=(10, 50), sticky="nsew")
 
         # create textbox
-        self.textbox = tkinter.Text(self,height=200, width=250, background="gray30")
-        self.textbox.grid(row=0, column=1, columnspan=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.textbox = tkinter.Text(self,height=25, width=25, background="gray30")
+        self.textbox.grid(row=0, column=1,rowspan=6, columnspan=3, padx=(100, 100), pady=(50, 50), sticky="nsew")
 
         # Para configurar la pantalla
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Apariencia:", anchor="w")
