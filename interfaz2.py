@@ -38,7 +38,7 @@ class App(customtkinter.CTk):
         # create main entry and button
         #self.entry = customtkinter.CTkEntry(self, placeholder_text="Datos")
         # Para mostrar los resultados
-        self.puntos = customtkinter.CTkLabel(self, text="Puntos Fijos: ", anchor="w")
+        self.puntos = customtkinter.CTkLabel(self, text="Resultados: ", anchor="w")
         self.puntos.grid(row=9, column=1, padx=(20,10), pady=(10, 0))
         self.resultados = tkinter.Text(self,height=5, width=40, background="white")
         self.resultados.grid(row=10, column=1,rowspan=2, columnspan=6, padx=(20, 0), pady=(20, 50), sticky="nsew")
@@ -72,7 +72,7 @@ class App(customtkinter.CTk):
         # create main entry and button
         self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="RoyalBlue2", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.Calcular)
         self.main_button_1.grid(row=10, column=7, padx=(20, 50), pady=(20, 10), sticky="nsew")
-        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"),  command=self.Borrar)
         self.main_button_2.grid(row=11, column=7, padx=(20, 50), pady=(10, 50), sticky="nsew")
 
         # create textbox
@@ -101,8 +101,17 @@ class App(customtkinter.CTk):
     def sidebar_button_event(self):
         print("sidebar_button click")
     
+    #Borrar todo lo introducido y obtenido
+    def Borrar(self):
+        self.resultados.delete(1.0, END)
+        self.entry1.delete(0, END)
+        self.entry2.delete(0, END)
+        self.entry3.delete(0, END)
+        self.entry4.delete(0, END)
+        self.entry5.delete(0, END)
+        #Falta para poder borrar la gráfica
 
-    # Crea una función para dibujar la gráfica de la función
+    # Crea una función para dibujar la gráfica de la función y mostrar calculos en pantalla
     def Calcular(self):
         a = float(self.entry1.get())
         b = float(self.entry2.get())
@@ -166,7 +175,7 @@ class App(customtkinter.CTk):
 
         # Dibuja la gráfica de la función
         ax.plot(x1, f1)
-        
+  
         # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
         canvas = FigureCanvasTkAgg(fig, master=self.textbox)
         # Obtiene el widget que se mostrará en la interfaz de usuario
