@@ -9,7 +9,7 @@ from sympy import *
 import main
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
 x, y = symbols('x y')
 class App(customtkinter.CTk):
@@ -53,8 +53,12 @@ class App(customtkinter.CTk):
         self.entry4.grid(row=3, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
         self.entry5 = customtkinter.CTkEntry(self, placeholder_text="y0 ", width=100, height=10)
         self.entry5.grid(row=4, column=4, padx=(10, 20), pady=(10, 10), sticky="nsew")
+
+        # crea grafica
+        self.grafica = customtkinter.CTkCanvas(self,height=25, width=25, background="grey")
+        self.grafica.grid(row=0, column=1,rowspan=6, columnspan=3, padx=(100, 100), pady=(50, 50), sticky="nsew")
         
-        # create radiobutton frame
+        # crea radiobutton frame
         self.radiobutton_frame = customtkinter.CTkFrame(self)
         self.radiobutton_frame.grid(row=0, column=7,rowspan=6, padx=(20, 50), pady=(50, 0), sticky="nsew")
         self.radio_var = tkinter.IntVar(value=0)
@@ -70,14 +74,12 @@ class App(customtkinter.CTk):
         
 
         # create main entry and button
-        self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="RoyalBlue2", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.Calcular)
+        self.main_button_1 = customtkinter.CTkButton(master=self, text="Calcular", fg_color="SpringGreen4", border_width=2, text_color=("gray10", "#DCE4EE"), command=self.Calcular)
         self.main_button_1.grid(row=10, column=7, padx=(20, 50), pady=(20, 10), sticky="nsew")
-        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick3", border_width=2, text_color=("gray10", "#DCE4EE"),  command=self.Borrar)
+        self.main_button_2 = customtkinter.CTkButton(master=self, text="Borrar", fg_color="firebrick4", border_width=2, text_color=("gray10", "#DCE4EE"),  command=self.Borrar)
         self.main_button_2.grid(row=11, column=7, padx=(20, 50), pady=(10, 50), sticky="nsew")
 
-        # create textbox
-        self.textbox = tkinter.Text(self,height=25, width=25, background="gray30")
-        self.textbox.grid(row=0, column=1,rowspan=6, columnspan=3, padx=(100, 100), pady=(50, 50), sticky="nsew")
+        
 
         # Para configurar la pantalla
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Apariencia:", anchor="w")
@@ -109,79 +111,132 @@ class App(customtkinter.CTk):
         self.entry3.delete(0, END)
         self.entry4.delete(0, END)
         self.entry5.delete(0, END)
-        #Falta para poder borrar la gráfica
+        # Para borrar la grafica
+        try: 
+            self.canvas.get_tk_widget().pack_forget()
+        except AttributeError: 
+            pass
 
     # Crea una función para dibujar la gráfica de la función y mostrar calculos en pantalla
     def Calcular(self):
-        a = float(self.entry1.get())
-        b = float(self.entry2.get())
-        
-        fx = a*y + main.f(a,b,x) 
-        gy = -x + main.f(a,b,fx)
-        
-        k = float(self.entry3.get())
+        if self.entry1.get() == '':
+            a = 0.0
+        else:
+            a = float(self.entry1.get())
+        if self.entry2.get() == '':
+            b = 0.0
+        else:
+            b = float(self.entry2.get())
+        if self.entry3.get() == '':
+            k = 0.0
+        else:
+            k = float(self.entry3.get())
 
         fk = main.recursividad_fx(a,b,k)
         gk = main.recursividad_gy(a,b,k)
+        value0 = self.radio_button_1._variable.get()
+        value1 = self.radio_button_2._variable.get()
+        value2 = self.radio_button_3._variable.get()
+        if value0 == 0:
+            # Calculo funcion
+            #Calculo de los puntos fijos
+            puntos_fijos = main.puntosFijos_fx(a,b,k)
+            #puntos_fijos = nonlinsolve([Eq(fk, x), Eq(gk, y)], (x, y))
+            self.resultados.insert(1.0, "Puntos fijos: " + str(puntos_fijos))
+            #Calculamos la estabilidad de los puntos fijos mediante la funcion estabilidad
+            #res = main.estabilidad(fx, gy, puntos_fijos)
+            #self.resultados.insert('2.0', "\nEstabilidad: " + str(res))
+            # Define la función a graficar
+            def f(x):
+                return ((a*x) - (3*b)/(a + pow(e,(b*x))))
 
-        #Calculo de los puntos fijos
-        puntos_fijos = nonlinsolve([Eq(fk, x), Eq(gk, y)], (x, y))
-        self.resultados.insert('1.0', "Puntos fijos: " + str(puntos_fijos))
+            # Crea una figura y un eje para la gráfica
+            fig, ax = plt.subplots()
 
-        #Calculamos la estabilidad de los puntos fijos mediante la funcion estabilidad
-        res = main.estabilidad(fx, gy, puntos_fijos)
-        self.resultados.insert('2.0', "\nEstabilidad: " + str(res))
+            # Calcula los valores de x y y para la gráfica
+            x1 = np.linspace(-10, 10, 100)
+            f1 = f(x1)
+
+            # Dibuja la gráfica de la función
+            ax.plot(x1, f1)
+    
+            # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
+            self.canvas = FigureCanvasTkAgg(fig, master=self.grafica)
+            # Obtiene el widget que se mostrará en la interfaz de usuario
+            widget = self.canvas.get_tk_widget()
+            # Muestra el widget
+            widget.pack()
+
+        elif value1 == 1:
+            # Calculo orbita
+            self.resultados.delete(1.0, tkinter.END)
+            #Calculamos la matriz jacobiana
+            # j = [[simplify(i) for i in x] for x in Matrix([fx, gy]).jacobian(Matrix([x, y])).tolist()]
+            # self.resultados.insert('3.0', "\nJacobiana: " + str(j))
+            # #Para los puntos fijos obtenidos calculamos los autovalores
+            # f_eigen_values = list(Matrix([fx, gy]).jacobian(Matrix([x, y])).eigenvals().keys())
+
+            # eigen_values = [list(simplify(f.subs({x:p[0], y:p[1]})) for f in f_eigen_values) for p in puntos_fijos]
+
+            # self.resultados.insert('4.0', "\nAutovalores: " + str(eigen_values))
+            
+            # #Valores para calcular los exponentes de Lyapunov
+            # x0 = float(self.entry4.get())
+            # y0 = float(self.entry5.get())
+
+            # #Calculamos los exponentes de Lyapunov
+            # n_lyapunov = main.lyapunov_n(fx, gy, x0, y0)
+            # self.resultados.insert('5.0', "\nNumero de Lyapunov: " + str(n_lyapunov))
+            # exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
+            # self.resultados.insert('6.0', "\nExponentes de Lyapunov: " + str(exp_lyapunov))
+
+            # #Ver si hay órbitas caóticas para x0 e y0
+            # if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
+            #     #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
+            #     #ambas orbitas tendrán el mismo exponente de Lyapunov.
+            #     if (exp_lyapunov[0] == exp_lyapunov[1]) : 
+            #         self.resultados.insert('7.0', "\nHay orbitas caoticas")
+            # else :
+            #     self.resultados.insert('8.0', "\nNo se encuentran Orbitas Caoticas")
+            funcion = "Orbitas"
+            self.resultados.insert(1.0, funcion)
+        elif value2 == 2:
+            # Calculo atractores
+            self.resultados.delete(1.0, tkinter.END)
+            funcion = "Atractores"
+            self.resultados.insert(1.0, funcion)
+
         
-        #Calculamos la matriz jacobiana
-        j = [[simplify(i) for i in x] for x in Matrix([fx, gy]).jacobian(Matrix([x, y])).tolist()]
-        self.resultados.insert('3.0', "\nJacobiana: " + str(j))
 
-        #Para los puntos fijos obtenidos calculamos los autovalores
-        f_eigen_values = list(Matrix([fx, gy]).jacobian(Matrix([x, y])).eigenvals().keys())
-
-        eigen_values = [list(simplify(f.subs({x:p[0], y:p[1]})) for f in f_eigen_values) for p in puntos_fijos]
-
-        self.resultados.insert('4.0', "\nAutovalores: " + str(eigen_values))
         
-        #Valores para calcular los exponentes de Lyapunov
-        x0 = float(self.entry4.get())
-        y0 = float(self.entry5.get())
 
-        #Calculamos los exponentes de Lyapunov
-        n_lyapunov = main.lyapunov_n(fx, gy, x0, y0)
-        self.resultados.insert('5.0', "\nNumero de Lyapunov: " + str(n_lyapunov))
-        exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
-        self.resultados.insert('6.0', "\nExponentes de Lyapunov: " + str(exp_lyapunov))
+        
+        
+        
 
-        #Ver si hay órbitas caóticas para x0 e y0
-        if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
-            #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
-            #ambas orbitas tendrán el mismo exponente de Lyapunov.
-            if (exp_lyapunov[0] == exp_lyapunov[1]) : 
-                self.resultados.insert('7.0', "\nHay orbitas caoticas")
-        else :
-            self.resultados.insert('8.0', "\nNo se encuentran Orbitas Caoticas")
+        
 
         # Define la función a graficar
-        def f(x):
-            return ((a*x) - (3*b)/(a + pow(e,(b*x))))
+        #def f(x):
+        #    return ((a*x) - (3*b)/(a + pow(e,(b*x))))
 
         # Crea una figura y un eje para la gráfica
-        fig, ax = plt.subplots()
+        #fig, ax = plt.subplots()
 
         # Calcula los valores de x y y para la gráfica
-        x1 = np.linspace(-10, 10, 100)
-        f1 = f(x1)
+        #x1 = np.linspace(-10, 10, 100)
+        #f1 = f(x1)
 
         # Dibuja la gráfica de la función
-        ax.plot(x1, f1)
+        #ax.plot(x1, f1)
   
         # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
-        canvas = FigureCanvasTkAgg(fig, master=self.textbox)
+        #canvas = FigureCanvasTkAgg(fig, master=self.textbox)
         # Obtiene el widget que se mostrará en la interfaz de usuario
-        widget = canvas.get_tk_widget()
+        #widget = canvas.get_tk_widget()
         # Muestra el widget
-        widget.pack()
+        #widget.pack()
+
     
         
 
