@@ -1,13 +1,11 @@
 from tkinter import *
 import tkinter.messagebox
 import customtkinter
-from math import e
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from sympy import *
 import main
-import cmath
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -116,7 +114,11 @@ class App(customtkinter.CTk):
         self.entry5.delete(0, END)
         # Para borrar la grafica
         try: 
-            self.canvas.get_tk_widget().pack_forget()
+            self.canvas0.get_tk_widget().pack_forget()
+        except AttributeError: 
+            pass
+        try: 
+            self.canvas1.get_tk_widget().pack_forget()
         except AttributeError: 
             pass
         try: 
@@ -153,7 +155,11 @@ class App(customtkinter.CTk):
         if value0 == 0:
             self.resultados.delete(1.0, tkinter.END)
             try: 
-                self.canvas.get_tk_widget().pack_forget()
+                self.canvas0.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
+            try: 
+                self.canvas1.get_tk_widget().pack_forget()
             except AttributeError: 
                 pass
             try: 
@@ -175,18 +181,22 @@ class App(customtkinter.CTk):
             ax.plot(x1, f1, c= "#00cc44")
     
             # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
-            canvas = FigureCanvasTkAgg(fig, master=self.grafica)
+            self.canvas0 = FigureCanvasTkAgg(fig, master=self.grafica)
             # Obtiene el widget que se mostrará en la interfaz de usuario
-            widget = canvas.get_tk_widget()
+            widget0 = self.canvas0.get_tk_widget()
             # Muestra el widget
-            widget.pack()
+            widget0.pack()
             
             
             
         elif value1 == 1:
             self.resultados.delete(1.0, tkinter.END)
             try: 
-                self.canvas.get_tk_widget().pack_forget()
+                self.canvas0.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
+            try: 
+                self.canvas1.get_tk_widget().pack_forget()
             except AttributeError: 
                 pass
             try: 
@@ -267,18 +277,22 @@ class App(customtkinter.CTk):
                     plt.plot(n[0], n[1], "o")
             
             # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
-            self.canvas = FigureCanvasTkAgg(fig, master=self.grafica)
+            self.canvas1 = FigureCanvasTkAgg(fig, master=self.grafica)
             # Obtiene el widget que se mostrará en la interfaz de usuario
-            widget = self.canvas.get_tk_widget()
+            widget1 = self.canvas1.get_tk_widget()
             # Muestra el widget
-            widget.pack()
+            widget1.pack()
             
             
         elif value2 == 2:
             # Calculo orbita
             self.resultados.delete(1.0, tkinter.END)
             try: 
-                self.canvas.get_tk_widget().pack_forget()
+                self.canvas0.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
+            try: 
+                self.canvas1.get_tk_widget().pack_forget()
             except AttributeError: 
                 pass
             try: 
@@ -307,6 +321,18 @@ class App(customtkinter.CTk):
         elif value3 == 3:
             # Calculo atractores
             self.resultados.delete(1.0, tkinter.END)
+            try: 
+                self.canvas0.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
+            try: 
+                self.canvas1.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
+            try: 
+                self.canvas2.get_tk_widget().pack_forget()
+            except AttributeError: 
+                pass
             funcion = "Atractores"
             self.resultados.insert(1.0, funcion)
 
