@@ -139,6 +139,9 @@ class App(customtkinter.CTk):
         else:
             k = float(self.entry3.get())
 
+        fx_calcular = a*y + main.f(a,b,x) 
+        gy_calcular = -x + main.f(a,b,fx_calcular)
+
         fk = main.recursividad_fx(a,b,k)
         gk = main.recursividad_gy(a,b,k)
         value0 = self.radio_button_1._variable.get()
@@ -158,9 +161,6 @@ class App(customtkinter.CTk):
             except AttributeError: 
                 pass
             # Calculo funcion
-            #Calculamos la estabilidad de los puntos fijos mediante la funcion estabilidad
-            #res = main.estabilidad(fx, gy, puntos_fijos)
-            #self.resultados.insert('2.0', "\nEstabilidad: " + str(res))
             # Define la función a graficar
             def f(x):
                 return main.f(a,b,x)
@@ -196,6 +196,40 @@ class App(customtkinter.CTk):
             #Calculo de los puntos fijos
             puntos_fijos = list(nonlinsolve([Eq(fk, x), Eq(gk, y)], (x, y)))
             self.resultados.insert(1.0, "Puntos fijos: " + str(puntos_fijos))
+
+            #Calculamos la estabilidad de los puntos fijos mediante la funcion estabilidad
+            res = main.estabilidad(fx_calcular, gy_calcular, puntos_fijos)
+            self.resultados.insert('2.0', "\nEstabilidad: " + str(res))
+
+            #Calculamos la matriz jacobiana
+            j = [[simplify(i) for i in x] for x in Matrix([fx_calcular, gy_calcular]).jacobian(Matrix([x, y])).tolist()]
+            self.resultados.insert('3.0', "\nJacobiana: " + str(j))
+            
+            #Para los puntos fijos obtenidos calculamos los autovalores
+            f_eigen_values = list(Matrix([fx_calcular, gy_calcular]).jacobian(Matrix([x, y])).eigenvals().keys())
+
+            eigen_values = [list(simplify(f.subs({x:p[0], y:p[1]})) for f in f_eigen_values) for p in puntos_fijos]
+
+            self.resultados.insert('4.0', "\nAutovalores: " + str(eigen_values))
+            
+            #Valores para calcular los exponentes de Lyapunov
+            x0 = float(self.entry4.get())
+            y0 = float(self.entry5.get())
+
+            #Calculamos los exponentes de Lyapunov
+            n_lyapunov = main.lyapunov_n(fx_calcular, gy_calcular, x0, y0)
+            # self.resultados.insert('5.0', "\nNumero de Lyapunov: " + str(n_lyapunov))
+            exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
+            self.resultados.insert('6.0', "\nExponentes de Lyapunov: " + str(exp_lyapunov))
+
+            #Ver si hay órbitas caóticas para x0 e y0
+            if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
+                #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
+                #ambas orbitas tendrán el mismo exponente de Lyapunov.
+                if (exp_lyapunov[0] == exp_lyapunov[1]) : 
+                    self.resultados.insert('7.0', "\nHay orbitas caoticas")
+            else :
+                self.resultados.insert('8.0', "\nNo se encuentran Orbitas Caoticas")
             
             def move_spines():
                 """Crea la figura de pyplot y los ejes. Mueve las lineas de la izquierda y de abajo
@@ -218,7 +252,7 @@ class App(customtkinter.CTk):
             rangoy = np.linspace(-y0, y0, 10)
             def fx(x,y):
                 return a*y + main.f(a,b,x)
-            def fy(x,y):
+            def gy(x,y):
                 return -x + main.f(a,b, main.f(a,b,x))
             fig, ax = plt.subplots()
             # Para los puntos imaginarios
@@ -269,70 +303,14 @@ class App(customtkinter.CTk):
             widget2 = self.canvas2.get_tk_widget()
             # Muestra el widget
             widget2.pack()
-            #Calculamos la matriz jacobiana
-            j = [[simplify(i) for i in x] for x in Matrix([fx, gy]).jacobian(Matrix([x, y])).tolist()]
-            self.resultados.insert('3.0', "\nJacobiana: " + str(j))
-            #Para los puntos fijos obtenidos calculamos los autovalores
-            f_eigen_values = list(Matrix([fx, gy]).jacobian(Matrix([x, y])).eigenvals().keys())
-
-            eigen_values = [list(simplify(f.subs({x:p[0], y:p[1]})) for f in f_eigen_values) for p in puntos_fijos]
-
-            self.resultados.insert('4.0', "\nAutovalores: " + str(eigen_values))
             
-            #Valores para calcular los exponentes de Lyapunov
-            x0 = float(self.entry4.get())
-            y0 = float(self.entry5.get())
-
-            #Calculamos los exponentes de Lyapunov
-            n_lyapunov = main.lyapunov_n(fx, gy, x0, y0)
-            # self.resultados.insert('5.0', "\nNumero de Lyapunov: " + str(n_lyapunov))
-            exp_lyapunov = list(map(lambda x: ln(x), n_lyapunov))
-            self.resultados.insert('6.0', "\nExponentes de Lyapunov: " + str(exp_lyapunov))
-
-            #Ver si hay órbitas caóticas para x0 e y0
-            if (exp_lyapunov[0] > 0 and exp_lyapunov[1] != 0) : # tengamos un exponente mayor que 0 y otro distinto de 0
-                #Para que sea asintoticamente periodica, tiene que serlo tambien para la orbita periodica, entoces
-                #ambas orbitas tendrán el mismo exponente de Lyapunov.
-                if (exp_lyapunov[0] == exp_lyapunov[1]) : 
-                    self.resultados.insert('7.0', "\nHay orbitas caoticas")
-            else :
-                self.resultados.insert('8.0', "\nNo se encuentran Orbitas Caoticas")
         elif value3 == 3:
             # Calculo atractores
             self.resultados.delete(1.0, tkinter.END)
             funcion = "Atractores"
             self.resultados.insert(1.0, funcion)
 
-        #####
 
-        
-
-        
-        
-        
-
-        
-
-        # Define la función a graficar
-        #def f(x):
-        #    return ((a*x) - (3*b)/(a + pow(e,(b*x))))
-
-        # Crea una figura y un eje para la gráfica
-        #fig, ax = plt.subplots()
-
-        # Calcula los valores de x y y para la gráfica
-        #x1 = np.linspace(-10, 10, 100)
-        #f1 = f(x1)
-
-        # Dibuja la gráfica de la función
-        #ax.plot(x1, f1)
-  
-        # Crea una instancia de FigureCanvasTkAgg utilizando la instancia de Figure
-        #canvas = FigureCanvasTkAgg(fig, master=self.textbox)
-        # Obtiene el widget que se mostrará en la interfaz de usuario
-        #widget = canvas.get_tk_widget()
-        # Muestra el widget
-        #widget.pack()
 
     
         
